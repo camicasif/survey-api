@@ -1,9 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Career } from '../career/career.entity';
+import { Career } from './career.entity';
+import {Auditable} from "../backoffice/auditable.entity";
 
 @Entity()
-export class Respondent {
+export class Respondent extends Auditable{
     @PrimaryGeneratedColumn()
     @ApiProperty({
         description: 'ID único generado automáticamente para el encuestado',
@@ -11,7 +12,7 @@ export class Respondent {
     })
     id: number;
 
-    @Column('int')
+    @Column('int', { unique: true })
     @ApiProperty({
         description: 'Número de cédula de identidad del encuestado',
         example: 12345678,
@@ -39,7 +40,7 @@ export class Respondent {
     })
     age: number;
 
-    @ManyToOne(() => Career, (career) => career.respondents)
+    @ManyToOne(() => Career, (career) => career.respondents,{ eager: false })
     @ApiProperty({
         description: 'Carrera asociada al encuestado, que describe su profesión o campo de estudio',
         type: () => Career,

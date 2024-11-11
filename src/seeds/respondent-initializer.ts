@@ -2,10 +2,10 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Respondent } from '../respondent/respondent.entity';
-import { Career } from '../career/career.entity';
+import { Career } from '../respondent/career.entity';
 
 @Injectable()
-export class DataInitializer implements OnModuleInit {
+export class RespondentInitializer implements OnModuleInit {
     constructor(
         @InjectRepository(Respondent)
         private readonly respondantRepository: Repository<Respondent>,

@@ -1,8 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import {Respondent} from "../respondent/respondent.entity";
+import {Auditable} from "../backoffice/auditable.entity";
 
 @Entity()
-export class Career {
+export class Career extends Auditable{
     @PrimaryGeneratedColumn()
     id: number;
 

@@ -2,9 +2,10 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'ty
 import { ApiProperty } from '@nestjs/swagger';
 import { Form } from './form.entity';
 import { Answer } from './answer.entity';
+import {Auditable} from "../backoffice/auditable.entity";
 
 @Entity()
-export class Question {
+export class Question extends Auditable{
     @PrimaryGeneratedColumn()
     @ApiProperty({
         description: 'ID único generado automáticamente para la pregunta',

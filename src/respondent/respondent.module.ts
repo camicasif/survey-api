@@ -1,11 +1,18 @@
 import { Module } from '@nestjs/common';
-import { RespondantController } from './respondant.controller';
-import { RespondantService } from './respondant.service';
+import { RespondentController } from './respondentController';
+import { RespondentService } from './respondent.service';
 import {CareerService} from "./career.service";
 import {CareerController} from "./career.controller";
+import {Career} from "./career.entity";
+import {Respondent} from "./respondent.entity";
+import {TypeOrmModule} from "@nestjs/typeorm";
+import {LoggerService} from "../backoffice/logger.service";
 
 @Module({
-  controllers: [RespondantController,CareerController],
-  providers: [RespondantService, CareerService]
+  imports: [
+    TypeOrmModule.forFeature([Respondent, Career]),
+  ],
+  controllers: [RespondentController,CareerController],
+  providers: [RespondentService, CareerService, LoggerService]
 })
 export class RespondentModule {}
