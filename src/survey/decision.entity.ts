@@ -11,21 +11,24 @@ export class Decision extends Auditable{
     @ApiProperty({ description: 'ID único de la decisión', example: 1 })
     id: number;
 
-    @ManyToOne(() => Survey, { eager: true })
+    @ManyToOne(() => Survey, )
     @ApiProperty({ description: 'Encuesta a la que pertenece la decisión', type: () => Survey })
     survey: Survey;
 
-    @ManyToOne(() => Question, { eager: true })
+    @ManyToOne(() => Question, )
     @ApiProperty({ description: 'Pregunta que se respondió en la decisión', type: () => Question })
     question: Question;
 
-    @ManyToOne(() => Answer, { eager: true, nullable: true })
+    @ManyToOne(() => Answer, {  nullable: true })
     @ApiProperty({ description: 'Respuesta elegida por el encuestado', type: () => Answer })
     answer: Answer;
 
-    @Column('varchar', { length: 255 })
-    @ApiProperty({ description: 'Coordenadas del mouse antes de tomar la respuesta', example: '(120,340),(121,340)' })
-    mouseCoordinates: string;
+    @Column('json')
+    @ApiProperty({
+        description: 'Coordenadas del mouse como un array de puntos',
+        example: '[{"x": 120, "y": 340}, {"x": 121, "y": 341}]'
+    })
+    mouseCoordinates: { x: number; y: number }[];
 
     @Column('int')
     @ApiProperty({ description: 'Tiempo que tardó el encuestado en decidir por la respuesta, en segundos', example: 15 })

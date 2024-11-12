@@ -10,15 +10,15 @@ export class Survey extends Auditable{
     @ApiProperty({ description: 'ID único de la encuesta', example: 1 })
     id: number;
 
-    @ManyToOne(() => Form, { eager: true })
+    @ManyToOne(() => Form )
     @ApiProperty({ description: 'Formulario al que pertenece la encuesta', type: () => Form })
     form: Form;
 
-    @ManyToOne(() => Respondent, { eager: true })
+    @ManyToOne(() => Respondent )
     @ApiProperty({ description: 'Encuestado que tomó la encuesta', type: () => Respondent })
     respondent: Respondent;
 
-    @Column('int')
+    @Column('int',{ default: 0 })
     @ApiProperty({ description: 'Tiempo total que tomó completar la encuesta en segundos', example: 300 })
     responseTime: number;
 

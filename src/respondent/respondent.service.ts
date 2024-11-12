@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Respondent } from './respondent.entity';
 import {LoggerService} from "../backoffice/logger.service";
 import { Career } from './career.entity';
+import { CareerDto } from './dto/career.dto';
 @Injectable()
 export class RespondentService {
 
@@ -16,6 +17,19 @@ export class RespondentService {
         private readonly loggerService: LoggerService
     ) {}
 
+    async saveCareer(data: CareerDto): Promise<Career> {
+        if (data.id) {
+            const existingCareer = await this.careerRepository.findOne({ where: { id: data.id } });
+            if (!existingCareer) {
+                throw new NotFoundException(`Career con ID ${data.id} no encontrado.`);
+            }
+            await this.careerRepository.update(data.id, data);
+            return this.careerRepository.findOne({ where: { id: data.id } });
+        } else {
+            const newCareer = this.careerRepository.create(data);
+            return await this.careerRepository.save(newCareer);
+        }
+    }
     async saveOrUpdateRespondent(data: Partial<Respondent>): Promise<Respondent> {
         if (data.career && data.career.id) {
             const existingCareer = await this.careerRepository.findOne({ where: { id: data.career.id } });

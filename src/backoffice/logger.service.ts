@@ -8,12 +8,12 @@ export class LoggerService {
 
     constructor() {
         this.logger = winston.createLogger({
-            level: 'error',
+            level: 'info',
             format: winston.format.combine(
-                winston.format.timestamp(),
-                winston.format.printf(({ level, message, timestamp }) => {
-                    return `${timestamp} [${level.toUpperCase()}]: ${message}`;
-                }),
+              winston.format.timestamp(),
+              winston.format.printf(({ level, message, timestamp }) => {
+                  return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+              }),
             ),
             transports: [
                 new winston.transports.Console(),
@@ -22,11 +22,28 @@ export class LoggerService {
                     datePattern: 'YYYY-MM-DD',
                     level: 'error',
                 }),
+                new winston.transports.DailyRotateFile({
+                    filename: 'logs/combined-%DATE%.log',
+                    datePattern: 'YYYY-MM-DD',
+                    level: 'info',
+                }),
             ],
         });
     }
 
+    log(message: string) {
+        this.logger.info(message);
+    }
+
     logError(message: string, trace: string) {
         this.logger.error(`${message} - ${trace}`);
+    }
+
+    logWarn(message: string) {
+        this.logger.warn(message);
+    }
+
+    logInfo(message: string) {
+        this.logger.info(message);
     }
 }
