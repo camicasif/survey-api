@@ -7,6 +7,7 @@ import { Respondent } from '../respondent/respondent.entity';
 import { Decision } from './decision.entity';
 import { Question } from '../form/question.entity';
 import { Answer } from '../form/answer.entity';
+import { LoggerService } from '../backoffice/logger.service';
 
 @Injectable()
 export class SurveyService {
@@ -23,39 +24,45 @@ export class SurveyService {
     private readonly questionRepository: Repository<Question>,
     @InjectRepository(Answer)
     private readonly answerRepository: Repository<Answer>,
+    private readonly loggerService: LoggerService
+
   ) {}
 
   async createSurvey(formId: number, respondentId: number): Promise<Survey> {
     // Cargar solo el `id` y `isOpen` del formulario
     const form = await this.formRepository.findOne({
       where: { id: formId },
-      select: ['id', 'isOpen'],
+      select: ['id', 'isOpen', 'nTimesTaken'],
     });
     if (!form) {
-      throw new BadRequestException(`El Form con ID ${formId} no existe.`);
+      this.loggerService.logError(`El Form con ID ${formId} no existe.`, "Error al crear una encuesta");
+      throw new BadRequestException(`El formulario no existe`);
     }
 
-    // Verificar si el formulario está abierto
     if (!form.isOpen) {
-      throw new BadRequestException(`El Form con ID ${formId} no está disponible para ser completado.`);
+      this.loggerService.logError(`El Form con ID ${formId} no está abierto para ser usado.`, "Error al crear una encuesta");
+      throw new BadRequestException(`El formulario no está abierto, hablar con el administrador.`);
     }
 
     // Cargar solo el `id` del encuestado
     const respondent = await this.respondentRepository.findOne({
-      where: { id: respondentId },
-      select: ['id'],
+      where: { ci: respondentId },
+      select: ['ci'],
     });
     if (!respondent) {
-      throw new BadRequestException(`El Respondent con ID ${respondentId} no existe.`);
+      this.loggerService.logError(`El Respondent con ID ${respondentId} no existe.`, "Error al crear una encuesta");
+      throw new BadRequestException("El encuestado no existe");
     }
 
-    // Verificar si ya existe una encuesta con el mismo `formId` y `respondentId`
-    const existingSurvey = await this.surveyRepository.findOne({
-      where: { form: { id: formId }, respondent: { id: respondentId } },
-    });
-    if (existingSurvey) {
-      throw new ConflictException(`Ya existe una encuesta para el Form con ID ${formId} y Respondent con ID ${respondentId}.`);
-    }
+    // // Verificar si ya existe una encuesta con el mismo `formId` y `respondentId`
+    // const existingSurvey = await this.surveyRepository.findOne({
+    //   where: { form: { id: formId }, respondent: { ci: respondentId } },
+    // });
+    //TODO descomentar cuando haya terminado el desarrollo
+    // if (existingSurvey) {
+    //   this.loggerService.logError(`Ya existe una encuesta para el Form con ID ${formId} y Respondent con ID ${respondentId}.`, "Error al crear una encuesta");
+    //   throw new ConflictException(`Usted ya ha respondido este formulario`);
+    // }
 
     const newSurvey = this.surveyRepository.create({ form, respondent });
     const savedSurvey = await this.surveyRepository.save(newSurvey);
@@ -88,16 +95,21 @@ export class SurveyService {
     if (!question) throw new BadRequestException(`La pregunta con ID ${questionId} no pertenece al formulario de la encuesta con ID ${surveyId}.`);
 
     // Verificar que el Answer pertenece a la Question
-    const answer = await this.answerRepository.findOne({
-      where: { id: answerId, question: { id: questionId } }, // Asume que Answer tiene relación con Question
-    });
-    if (!answer) throw new BadRequestException(`La respuesta con ID ${answerId} no pertenece a la pregunta con ID ${questionId}.`);
+    const answer = await this.answerRepository
+      .createQueryBuilder('answer')
+      .innerJoin('answer.question', 'question')
+      .where('answer.id = :answerId', { answerId })
+      .andWhere('question.id = :questionId', { questionId })
+      .getOne();
 
-    // Verificar si ya existe un Decision con el mismo Survey y Question que no esté marcado como deleted
-    const existingDecision = await this.decisionRepository.findOne({
-      where: { survey: { id: surveyId }, question: { id: questionId }, deleted: false },
-    });
-    if (existingDecision) throw new ConflictException(`Ya existe una decisión para la encuesta con ID ${surveyId} y la pregunta con ID ${questionId}.`);
+    if (!answer) {
+      throw new BadRequestException(`La respuesta con ID ${answerId} no pertenece a la pregunta con ID ${questionId}.`);
+    }
+    // // Verificar si ya existe un Decision con el mismo Survey y Question que no esté marcado como deleted
+    // const existingDecision = await this.decisionRepository.findOne({
+    //   where: { survey: { id: surveyId }, question: { id: questionId }, deleted: false },
+    // });
+    // if (existingDecision) throw new ConflictException(`Ya existe una decisión para la encuesta con ID ${surveyId} y la pregunta con ID ${questionId}.`);
 
     // Crear y guardar la nueva Decision
     const newDecision = this.decisionRepository.create({
@@ -109,19 +121,19 @@ export class SurveyService {
     });
     return await this.decisionRepository.save(newDecision);
   }
-  async getSurveyById(id: number): Promise<Survey> {
-    return await this.surveyRepository.findOne({
-      where: { id },
-      relations: ['form', 'respondent'],
-      select: {
-        id: true,
-        responseTime: true,
-        completed: true,
-        form: { id: true },
-        respondent: { id: true },
-      },
-    });
-  }
+  // async getSurveyById(id: number): Promise<Survey> {
+  //   return await this.surveyRepository.findOne({
+  //     where: { id },
+  //     relations: ['form', 'respondent'],
+  //     select: {
+  //       id: true,
+  //       responseTime: true,
+  //       completed: true,
+  //       form: { id: true },
+  //       respondent: { ci: true },
+  //     },
+  //   });
+  // }
 
 
   async softDeleteSurvey(id: number): Promise<Survey> {

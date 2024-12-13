@@ -1,23 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Career } from './career.entity';
 import {Auditable} from "../backoffice/auditable.entity";
 
 @Entity()
 export class Respondent extends Auditable{
-    @PrimaryGeneratedColumn()
+    @PrimaryColumn('int')  // Marcar `ci` como clave primaria
     @ApiProperty({
-        description: 'ID único generado automáticamente para el encuestado',
-        example: 1,
-    })
-    id: number;
-
-    @Column('int', { unique: true })
-    @ApiProperty({
-        description: 'Número de cédula de identidad del encuestado',
+        description: 'Número de cédula de identidad del encuestado, clave primaria',
         example: 12345678,
     })
     ci: number;
+
 
     @Column('varchar', { length: 255 })
     @ApiProperty({

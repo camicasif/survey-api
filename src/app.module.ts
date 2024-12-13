@@ -14,6 +14,8 @@ import {Answer} from "./form/answer.entity";
 import {Form} from "./form/form.entity";
 import {Survey} from "./survey/survey.entity";
 import {Decision} from "./survey/decision.entity";
+import { User } from './backoffice/user.entity';
+import { AuthModule } from './backoffice/auth.module';
 
 @Module({
   imports: [
@@ -24,16 +26,18 @@ import {Decision} from "./survey/decision.entity";
       username: 'root',
       password: 'asdf123',
       database: 'eco_game_db',
-      entities: [Respondent, Career, Form, Question,Answer, Survey, Decision],
+      entities: [Respondent, Career, Form, Question,Answer, Survey, Decision, User],
       synchronize: true, // Reemplazado para borrar datos y recrear tablas
-      dropSchema: true,
+      dropSchema: false,
     }),
-    TypeOrmModule.forFeature([Respondent,Career, Form, Question,Answer,Survey,Decision]),
+    TypeOrmModule.forFeature([Respondent,Career, Form, Question,Answer,Survey,Decision, User]),
     RespondentModule,
     SurveyModule,
     FormModule,
+    AuthModule,
   ],
   controllers: [AppController],
+
   providers: [AppService, RespondentInitializer, FormInitializer],
 })
 export class AppModule {}

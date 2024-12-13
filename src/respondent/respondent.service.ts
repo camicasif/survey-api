@@ -38,19 +38,18 @@ export class RespondentService {
             }
         }
 
-        if (data.id) {
-            const existingRespondent = await this.respondentRepository.findOne({ where: { id: data.id } });
-            if (!existingRespondent) {
-                throw new NotFoundException(`Respondent con id ${data.id} no encontrado.`);
-            }
+        const existingRespondent = await this.respondentRepository.findOne({ where: { ci: data.ci } });
+
+        if (existingRespondent) {
+            // Si el encuestado ya existe, actualiza sus datos
             try {
-                await this.respondentRepository.update(data.id, data);
-                return await this.respondentRepository.findOne({ where: { id: data.id }, relations: ['career'] });
+                await this.respondentRepository.update(existingRespondent.ci, data);
+                return await this.respondentRepository.findOne({
+                    where: { ci: existingRespondent.ci },
+                    relations: ['career']
+                });
             } catch (error) {
                 this.loggerService.logError(`Error al actualizar el encuestado: ${error.message}`, error.stack);
-                if (error.code === 'ER_DUP_ENTRY') {
-                    throw new ConflictException('El número de cédula de identidad ya existe.');
-                }
                 throw error;
             }
         } else {
@@ -59,9 +58,6 @@ export class RespondentService {
                 return await this.respondentRepository.save(newRespondent);
             } catch (error) {
                 this.loggerService.logError(`Error al guardar el nuevo encuestado: ${error.message}`, error.stack);
-                if (error.code === 'ER_DUP_ENTRY') {
-                    throw new ConflictException('El número de cédula de identidad ya existe.');
-                }
                 throw error;
             }
         }
@@ -72,6 +68,21 @@ export class RespondentService {
         return  await this.respondentRepository.findOne({
             where: { ci },
             relations: ['career'],
+        });
+    }
+
+    async getAllCareers(): Promise<Partial<Career>[]> {
+        return this.careerRepository.find({
+            select: ['id', 'name'],
+            order: {
+                name: 'ASC',
+            },
+        });
+    }
+
+    async getAllCareersComplete(): Promise<Career[]> {
+        return this.careerRepository.find({
+            select: ['id', 'name','description'],
         });
     }
 }

@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Form } from './form.entity';
 import { Answer } from './answer.entity';
 import {Auditable} from "../backoffice/auditable.entity";
+import { Decision } from '../survey/decision.entity';
 
 @Entity()
 export class Question extends Auditable{
@@ -33,4 +34,11 @@ export class Question extends Auditable{
         type: () => [Answer],
     })
     answers: Answer[];
+
+    @OneToMany(() => Decision, (decision) => decision.question)
+    @ApiProperty({
+        description: 'Lista de decisiones asociadas a esta pregunta',
+        type: () => [Decision],
+    })
+    decisions: Decision[];
 }

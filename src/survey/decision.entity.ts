@@ -31,6 +31,6 @@ export class Decision extends Auditable{
     mouseCoordinates: { x: number; y: number }[];
 
     @Column('int')
-    @ApiProperty({ description: 'Tiempo que tardó el encuestado en decidir por la respuesta, en segundos', example: 15 })
+    @ApiProperty({ description: 'Tiempo que tardó el encuestado en decidir por la respuesta, en miliSegundos', example: 2505  })
     decisionTime: number;
 }

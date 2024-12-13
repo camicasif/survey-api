@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Form } from '../form/form.entity';
 import { Question } from '../form/question.entity';
 import { Answer } from '../form/answer.entity';
+import { User } from '../backoffice/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class FormInitializer implements OnModuleInit{
@@ -14,9 +16,31 @@ export class FormInitializer implements OnModuleInit{
         private readonly questionRepository: Repository<Question>,
         @InjectRepository(Answer)
         private readonly answerRepository: Repository<Answer>,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
     ) {}
 
+    async initializeAdmin(): Promise<{ message: string }> {
+        const email = 'admin';
+        const password = 'upbGames';
+
+        // Verificar si el administrador ya existe
+        const existingAdmin = await this.userRepository.findOneBy({ email });
+        if (existingAdmin) {
+            return { message: 'El usuario administrador ya existe.' };
+        }
+
+        // Crear el usuario administrador
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const adminUser = this.userRepository.create({ email, password: hashedPassword });
+        await this.userRepository.save(adminUser);
+
+        return { message: 'Usuario administrador creado exitosamente.' };
+    }
+
     async onModuleInit() {
+
+        await this.initializeAdmin();
         // Verificar si ya existen formularios
         const formCount = await this.formRepository.count();
         if (formCount === 0) {

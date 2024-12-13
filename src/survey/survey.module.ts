@@ -8,12 +8,13 @@ import { Respondent } from '../respondent/respondent.entity';
 import { SurveyController } from './survey.controller';
 import { Question } from '../form/question.entity';
 import { Answer } from '../form/answer.entity';
+import { LoggerService } from '../backoffice/logger.service';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Survey, Decision,Form, Respondent, Question, Answer])
     ],
-    providers: [SurveyService],
+    providers: [SurveyService, LoggerService],
     controllers: [SurveyController],
 
 })
